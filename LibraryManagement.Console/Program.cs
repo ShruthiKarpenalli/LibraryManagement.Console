@@ -129,8 +129,9 @@ static async Task UpdateBookAsync(BookService service)
     int.TryParse(Console.ReadLine(), out var year);
     book.PublishedYear = year;
 
-    await service.UpdateBookAsync(book);
-    Console.WriteLine("Book updated successfully.");
+    var success = await service.UpdateBookAsync(book);
+
+    Console.WriteLine(success ? "Book updated successfully!" : "Invalid ISBN. Must be 13 digits.");
 }
 
 static async Task DeleteBookAsync(BookService service)

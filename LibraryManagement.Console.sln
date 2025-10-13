@@ -1,13 +1,13 @@
-﻿
+﻿﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Console", "LibraryManagement.Console\LibraryManagement.Console.csproj", "{D46C7895-7EBF-494D-992E-D941F4EE3753}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Infrastructure", "LibraryManagement.Respository\LibraryManagement.Infrastructure.csproj", "{0648EB6E-8B29-4BFF-A8CD-D007D6EB4201}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Infrastructure", "LibraryManagement.Infrastructure\LibraryManagement.Infrastructure.csproj", "{0648EB6E-8B29-4BFF-A8CD-D007D6EB4201}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Domain", "LibraryManagement.Models\LibraryManagement.Domain.csproj", "{1FD020EA-6A09-48D2-820D-A0080B84A087}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Domain", "LibraryManagement.Domain\LibraryManagement.Domain.csproj", "{1FD020EA-6A09-48D2-820D-A0080B84A087}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Application", "LibraryManagement.Application\LibraryManagement.Application.csproj", "{AF6A29C0-F55F-400F-97E0-A159F71F7ABE}"
 EndProject
