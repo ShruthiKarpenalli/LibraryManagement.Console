@@ -8,7 +8,7 @@ namespace LibraryManagement.Domain.Interfaces
         Task<Book?> GetByIdAsync(Guid id);
         Task AddAsync(Book book);
         Task UpdateAsync(Book book);
-        Task DeleteAsync(Guid id);
+        Task<bool> DeleteAsync(Guid id);
     }
 }
 

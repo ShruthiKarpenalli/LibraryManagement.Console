@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
+//Setting Up the DI Container
 var services = new ServiceCollection();
 
 // 1. Resolve project root (LibraryManagement.Console folder)
@@ -33,6 +34,7 @@ services.AddLogging(builder =>
 services.AddSingleton<IBookRepository, InMemoryBookRepository>();
 services.AddSingleton<BookService>();
 
+//Building the Service Provider and Resolving Dependencies
 var provider = services.BuildServiceProvider();
 var bookService = provider.GetRequiredService<BookService>();
 
@@ -139,8 +141,8 @@ static async Task DeleteBookAsync(BookService service)
     Console.Write("Enter Book ID to delete: ");
     if (Guid.TryParse(Console.ReadLine(), out var id))
     {
-        await service.DeleteBookAsync(id);
-        Console.WriteLine("Book deleted successfully.");
+        var success = await service.DeleteBookAsync(id);
+        Console.WriteLine(success ? "Book deleted successfully." : "Book not found. Deletion failed.");
     }
     else
     {

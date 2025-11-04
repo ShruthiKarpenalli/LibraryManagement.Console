@@ -32,10 +32,10 @@ namespace LibraryManagement.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-        public Task DeleteAsync(Guid id)
+        public Task<bool> DeleteAsync(Guid id)
         {
-            _books.TryRemove(id, out _);
-            return Task.CompletedTask;
+            var removed = _books.TryRemove(id, out _);
+            return Task.FromResult(removed);
         }
     }
 }

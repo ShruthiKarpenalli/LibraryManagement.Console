@@ -55,9 +55,13 @@ namespace LibraryManagement.Application.Services
 
         public async Task<bool> DeleteBookAsync(Guid id)
         {
-            await _repository.DeleteAsync(id);
+            var success = await _repository.DeleteAsync(id);
+            if (!success)
+            {
+                _logger.LogWarning("Attempted to delete a book with ID {Id}, but it does not exist.", id);
+            }
             _logger.LogInformation("Deleted book with ID: {Id}", id);
-            return true;
+            return success;
         }
 
         private bool IsValidIsbn(string isbn)

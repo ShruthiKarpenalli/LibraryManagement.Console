@@ -79,18 +79,33 @@ namespace LibraryManagement.Tests.Services
         }
 
         [Fact]
-        public async Task DeleteBookAsync_ShouldCallRepository()
+        public async Task DeleteBookAsync_ShouldReturnFalse_WhenIdDoesNotExist()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            _mockRepo.Setup(r => r.DeleteAsync(id)).Returns(Task.CompletedTask);
+            var nonExistentId = Guid.NewGuid();
+            _mockRepo.Setup(r => r.DeleteAsync(nonExistentId)).ReturnsAsync(false);
 
             // Act
-            var result = await _service.DeleteBookAsync(id);
+            var result = await _service.DeleteBookAsync(nonExistentId);
+
+            // Assert
+            Assert.False(result);
+            _mockRepo.Verify(r => r.DeleteAsync(nonExistentId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteBookAsync_ShouldReturnTrue_WhenIdDoesExist()
+        {
+            // Arrange
+            var existentId = Guid.NewGuid();
+            _mockRepo.Setup(r => r.DeleteAsync(existentId)).ReturnsAsync(true);
+
+            // Act
+            var result = await _service.DeleteBookAsync(existentId);
 
             // Assert
             Assert.True(result);
-            _mockRepo.Verify(r => r.DeleteAsync(id), Times.Once);
+            _mockRepo.Verify(r => r.DeleteAsync(existentId), Times.Once);
         }
 
         [Fact]
