@@ -13,8 +13,8 @@ namespace LibraryManagement.Application.Services
 
         public BookService(IBookRepository repository, ILogger<BookService> logger)
         {
-            _repository = repository;
-            _logger = logger;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository)); 
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger)); 
         }
 
         public async Task<IEnumerable<Book>> GetAllBooksAsync()

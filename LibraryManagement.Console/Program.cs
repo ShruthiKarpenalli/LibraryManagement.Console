@@ -5,26 +5,19 @@ using LibraryManagement.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using LibraryManagement.Application.Interfaces;
 
 //Setting Up the DI Container
 var services = new ServiceCollection();
 
-// 1. Resolve project root (LibraryManagement.Console folder)
-var projectRoot = Directory.GetParent(AppContext.BaseDirectory)!.Parent!.Parent!.Parent!.FullName;
-
-// 2. Create Logs folder in project root
-var logFolder = Path.Combine(projectRoot, "Logs");
-Directory.CreateDirectory(logFolder); // ensures folder exists
-
 // Load configuration
 var configuration = new ConfigurationBuilder()
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)
-    .WriteTo.File(Path.Combine(logFolder, "log-.txt"), rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 services.AddLogging(builder =>
@@ -32,11 +25,12 @@ services.AddLogging(builder =>
 
 // Register dependencies
 services.AddSingleton<IBookRepository, InMemoryBookRepository>();
-services.AddSingleton<BookService>();
+services.AddSingleton<IBookService, BookService>();
+services.AddSingleton<LibraryManagementService>();
 
 //Building the Service Provider and Resolving Dependencies
 var provider = services.BuildServiceProvider();
-var bookService = provider.GetRequiredService<BookService>();
+var libraryService = provider.GetRequiredService<LibraryManagementService>();
 
 bool exit = false;
 
@@ -58,19 +52,19 @@ while (!exit)
         switch (choice)
         {
             case "1":
-                await AddBookAsync(bookService);
+                await libraryService.AddBookAsync();
                 break;
             case "2":
-                await UpdateBookAsync(bookService);
+                await libraryService.UpdateBookAsync();
                 break;
             case "3":
-                await DeleteBookAsync(bookService);
+                await libraryService.DeleteBookAsync();
                 break;
             case "4":
-                await ListBooksAsync(bookService);
+                await libraryService.ListBooksAsync();
                 break;
             case "5":
-                await ViewBookAsync(bookService);
+                await libraryService.ViewBookAsync();
                 break;
             case "6":
                 exit = true;
@@ -84,97 +78,5 @@ while (!exit)
     {
         Log.Fatal(ex, "An unhandled exception occurred.");
         Console.WriteLine($"Error: {ex.Message}");
-    }
-}
-
-static async Task AddBookAsync(BookService service)
-{
-    Console.Write("Title: ");
-    var title = Console.ReadLine();
-    Console.Write("Author: ");
-    var author = Console.ReadLine();
-    Console.Write("ISBN (13 digits): ");
-    var isbn = Console.ReadLine();
-    Console.Write("Year: ");
-    int.TryParse(Console.ReadLine(), out int year);
-
-    var book = new Book { Id = Guid.NewGuid(), Title = title!, Author = author!, ISBN = isbn!, PublishedYear = year };
-    var success = await service.AddBookAsync(book);
-    Log.Information("Book added: {Title}, ISBN: {ISBN}", title, isbn);
-
-    Console.WriteLine(success ? "Book added successfully!" : "Invalid ISBN. Must be 13 digits.");
-}
-
-static async Task UpdateBookAsync(BookService service)
-{
-    Console.Write("Enter Book ID to update: ");
-    if (!Guid.TryParse(Console.ReadLine(), out var id))
-    {
-        Console.WriteLine("Invalid ID.");
-        return;
-    }
-
-    var book = await service.GetBookByIdAsync(id);
-    if (book == null)
-    {
-        Console.WriteLine("Book not found.");
-        return;
-    }
-
-    Console.Write("New Title: ");
-    book.Title = Console.ReadLine()!;
-    Console.Write("New Author: ");
-    book.Author = Console.ReadLine()!;
-    Console.Write("New ISBN (13 digits): ");
-    book.ISBN = Console.ReadLine()!;
-    Console.Write("New Year: ");
-    int.TryParse(Console.ReadLine(), out var year);
-    book.PublishedYear = year;
-
-    var success = await service.UpdateBookAsync(book);
-
-    Console.WriteLine(success ? "Book updated successfully!" : "Invalid ISBN. Must be 13 digits.");
-}
-
-static async Task DeleteBookAsync(BookService service)
-{
-    Console.Write("Enter Book ID to delete: ");
-    if (Guid.TryParse(Console.ReadLine(), out var id))
-    {
-        var success = await service.DeleteBookAsync(id);
-        Console.WriteLine(success ? "Book deleted successfully." : "Book not found. Deletion failed.");
-    }
-    else
-    {
-        Console.WriteLine("Invalid ID.");
-    }
-}
-
-static async Task ListBooksAsync(BookService service)
-{
-    var books = await service.GetAllBooksAsync();
-    foreach (var b in books)
-    {
-        Console.WriteLine($"{b.Id} | {b.Title} by {b.Author} ({b.PublishedYear}) - ISBN: {b.ISBN}");
-    }
-}
-
-static async Task ViewBookAsync(BookService service)
-{
-    Console.Write("Enter Book ID: ");
-    if (Guid.TryParse(Console.ReadLine(), out var id))
-    {
-        var book = await service.GetBookByIdAsync(id);
-        if (book == null)
-        {
-            Console.WriteLine("Book not found.");
-            return;
-        }
-
-        Console.WriteLine($"\nTitle: {book.Title}\nAuthor: {book.Author}\nISBN: {book.ISBN}\nYear: {book.PublishedYear}");
-    }
-    else
-    {
-        Console.WriteLine("Invalid ID.");
     }
 }

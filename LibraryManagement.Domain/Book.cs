@@ -11,9 +11,5 @@ namespace LibraryManagement.Domain.Entities
         public string ISBN { get; set; } = string.Empty;
         public int PublishedYear { get; set; }
 
-        public override string ToString()
-        {
-            return $"Id: {Id}, Title: {Title}, Author: {Author}, ISBN: {ISBN}, Year: {PublishedYear}";
-        }
     }
 }
