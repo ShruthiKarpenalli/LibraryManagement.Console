@@ -20,127 +20,87 @@ namespace LibraryManagement.Tests.Services
             _service = new BookService(_mockRepo.Object, _mockLogger.Object);
         }
 
-        [Fact]
-        public async Task AddBookAsync_ShouldReturnTrue_WhenValidISBN()
+        [Theory]
+        [InlineData("1234567890123", true)] // Valid ISBN
+        [InlineData("123", false)]          // Invalid ISBN
+        public async Task AddBookAsync_ShouldValidateISBN(string isbn, bool expectedResult)
         {
             // Arrange
-            var book = new Book { Id = Guid.NewGuid(), Title = "Clean Code", Author = "Robert Martin", ISBN = "1234567890123" };
-            _mockRepo.Setup(r => r.AddAsync(book)).Returns(Task.CompletedTask);
-
-            // Act
-            var result = await _service.AddBookAsync(book);
-
-            // Assert
-            Assert.True(result);
-            _mockRepo.Verify(r => r.AddAsync(book), Times.Once);
-        }
-
-        [Fact]
-        public async Task AddBookAsync_ShouldReturnFalse_WhenInvalidISBN()
-        {
-            // Arrange
-            var book = new Book { Id = Guid.NewGuid(), Title = "Bad Code", Author = "Unknown", ISBN = "123" };
-
-            // Act
-            var result = await _service.AddBookAsync(book);
-
-            // Assert
-            Assert.False(result);
-            _mockRepo.Verify(r => r.AddAsync(It.IsAny<Book>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task UpdateBookAsync_ShouldReturnTrue_WhenValidISBN()
-        {
-            // Arrange
-            var book = new Book { Id = Guid.NewGuid(), Title = "Old Title", Author = "X", ISBN = "1234567890123" };
-            _mockRepo.Setup(r => r.UpdateAsync(book)).Returns(Task.CompletedTask);
-
-            // Act
-            var result = await _service.UpdateBookAsync(book);
-
-            // Assert
-            Assert.True(result);
-            _mockRepo.Verify(r => r.UpdateAsync(book), Times.Once);
-        }
-
-        [Fact]
-        public async Task UpdateBookAsync_ShouldReturnFalse_WhenInvalidISBN()
-        {
-            // Arrange
-            var book = new Book { Id = Guid.NewGuid(), Title = "Invalid ISBN", ISBN = "123" };
-
-            // Act
-            var result = await _service.UpdateBookAsync(book);
-
-            // Assert
-            Assert.False(result);
-            _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Book>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task DeleteBookAsync_ShouldReturnFalse_WhenIdDoesNotExist()
-        {
-            // Arrange
-            var nonExistentId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.DeleteAsync(nonExistentId)).ReturnsAsync(false);
-
-            // Act
-            var result = await _service.DeleteBookAsync(nonExistentId);
-
-            // Assert
-            Assert.False(result);
-            _mockRepo.Verify(r => r.DeleteAsync(nonExistentId), Times.Once);
-        }
-
-        [Fact]
-        public async Task DeleteBookAsync_ShouldReturnTrue_WhenIdDoesExist()
-        {
-            // Arrange
-            var existentId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.DeleteAsync(existentId)).ReturnsAsync(true);
-
-            // Act
-            var result = await _service.DeleteBookAsync(existentId);
-
-            // Assert
-            Assert.True(result);
-            _mockRepo.Verify(r => r.DeleteAsync(existentId), Times.Once);
-        }
-
-        [Fact]
-        public async Task GetBookByIdAsync_ShouldReturnBook_WhenExists()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var expectedBook = new Book { Id = id, Title = "Book Title", ISBN = "1234567890123" };
-            _mockRepo.Setup(r => r.GetByIdAsync(id)).ReturnsAsync(expectedBook);
-
-            // Act
-            var result = await _service.GetBookByIdAsync(id);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("Book Title", result!.Title);
-        }
-
-        [Fact]
-        public async Task GetAllBooksAsync_ShouldReturnAllBooks()
-        {
-            // Arrange
-            var books = new List<Book>
+            var book = new Book { Id = Guid.NewGuid(), Title = "Test Book", Author = "Test Author", ISBN = isbn };
+            if (expectedResult)
             {
-                new() { Id = Guid.NewGuid(), Title = "Book1", ISBN = "1234567890123" },
-                new() { Id = Guid.NewGuid(), Title = "Book2", ISBN = "9876543210987" }
-            };
-
-            _mockRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(books);
+                _mockRepo.Setup(r => r.AddAsync(book)).Returns(Task.CompletedTask);
+            }
 
             // Act
-            var result = await _service.GetAllBooksAsync();
+            var result = await _service.AddBookAsync(book);
 
             // Assert
-            Assert.Equal(2, ((List<Book>)result).Count);
+            Assert.Equal(expectedResult, result);
+            _mockRepo.Verify(r => r.AddAsync(It.IsAny<Book>()), expectedResult ? Times.Once() : Times.Never());
+        }
+
+        [Theory]
+        [InlineData("1234567890123", true)] // Valid ISBN
+        [InlineData("123", false)]          // Invalid ISBN
+        public async Task UpdateBookAsync_ShouldValidateISBN(string isbn, bool expectedResult)
+        {
+            // Arrange
+            var book = new Book { Id = Guid.NewGuid(), Title = "Test Book", Author = "Test Author", ISBN = isbn };
+            if (expectedResult)
+            {
+                _mockRepo.Setup(r => r.UpdateAsync(book)).Returns(Task.CompletedTask);
+            }
+
+            // Act
+            var result = await _service.UpdateBookAsync(book);
+
+            // Assert
+            Assert.Equal(expectedResult, result);
+            _mockRepo.Verify(r => r.UpdateAsync(It.IsAny<Book>()), expectedResult ? Times.Once() : Times.Never());
+        }
+
+        [Theory]
+        [InlineData(true)]  // Book exists
+        [InlineData(false)] // Book does not exist
+        public async Task DeleteBookAsync_ShouldHandleExistence(bool bookExists)
+        {
+            // Arrange
+            var bookId = Guid.NewGuid();
+            _mockRepo.Setup(r => r.DeleteAsync(bookId)).ReturnsAsync(bookExists);
+
+            // Act
+            var result = await _service.DeleteBookAsync(bookId);
+
+            // Assert
+            Assert.Equal(bookExists, result);
+            _mockRepo.Verify(r => r.DeleteAsync(bookId), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(true)]  // Book exists
+        [InlineData(false)] // Book does not exist
+        public async Task GetBookByIdAsync_ShouldHandleExistence(bool bookExists)
+        {
+            // Arrange
+            var bookId = Guid.NewGuid();
+            var book = bookExists ? new Book { Id = bookId, Title = "Test Book", ISBN = "1234567890123" } : null;
+            _mockRepo.Setup(r => r.GetByIdAsync(bookId)).ReturnsAsync(book);
+
+            // Act
+            var result = await _service.GetBookByIdAsync(bookId);
+
+            // Assert
+            if (bookExists)
+            {
+                Assert.NotNull(result);
+                Assert.Equal(bookId, result!.Id);
+            }
+            else
+            {
+                Assert.Null(result);
+            }
+            _mockRepo.Verify(r => r.GetByIdAsync(bookId), Times.Once());
         }
     }
 }

@@ -22,6 +22,11 @@ namespace LibraryManagement.Infrastructure.Repositories
 
         public Task AddAsync(Book book)
         {
+            if (_books.ContainsKey(book.Id))
+            {
+                throw new InvalidOperationException($"A book with ID '{book.Id}' already exists.");
+            }
+
             _books.TryAdd(book.Id, book);
             return Task.CompletedTask;
         }
