@@ -20,6 +20,42 @@ namespace LibraryManagement.Tests.Services
             _service = new BookService(_mockRepo.Object, _mockLogger.Object);
         }
 
+        [Fact]
+        public void Constructor_ShouldThrowArgumentNullException_WhenRepositoryIsNull()
+        {
+            // Arrange
+            IBookRepository? repository = null;
+            var mockLogger = new Mock<ILogger<BookService>>();
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new BookService(repository!, mockLogger.Object));
+            Assert.Equal("repository", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ShouldThrowArgumentNullException_WhenLoggerIsNull()
+        {
+            // Arrange
+            var mockRepository = new Mock<IBookRepository>();
+            ILogger<BookService>? logger = null;
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new BookService(mockRepository.Object, logger!));
+            Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ShouldNotThrow_WhenDependenciesAreValid()
+        {
+            // Arrange
+            var mockRepository = new Mock<IBookRepository>();
+            var mockLogger = new Mock<ILogger<BookService>>();
+
+            // Act & Assert
+            var service = new BookService(mockRepository.Object, mockLogger.Object);
+            Assert.NotNull(service);
+        }
+
         [Theory]
         [InlineData("1234567890123", true)] // Valid ISBN
         [InlineData("123", false)]          // Invalid ISBN
